@@ -8,15 +8,13 @@ import (
     "time"
 )
 
-// Logger определяет интерфейс для логирования
 type Logger interface {
     Info(msg string)
     Debug(msg string)
     Error(msg string)
 }
 
-// ==================== 1. Консольный логгер ====================
-// ConsoleLogger выводит логи в консоль с цветами
+
 type ConsoleLogger struct {
     debugMode bool
 }
@@ -28,21 +26,19 @@ func NewConsoleLogger(debugMode bool) *ConsoleLogger {
 }
 
 func (l *ConsoleLogger) Info(msg string) {
-    fmt.Printf("\033[32m[INFO]\033[0m %s\n", msg) // Зеленый цвет
+    fmt.Printf("\033[32m[INFO]\033[0m %s\n", msg) 
 }
 
 func (l *ConsoleLogger) Debug(msg string) {
     if l.debugMode {
-        fmt.Printf("\033[36m[DEBUG]\033[0m %s\n", msg) // Голубой цвет
+        fmt.Printf("\033[36m[DEBUG]\033[0m %s\n", msg) 
     }
 }
 
 func (l *ConsoleLogger) Error(msg string) {
-    fmt.Printf("\033[31m[ERROR]\033[0m %s\n", msg) // Красный цвет
+    fmt.Printf("\033[31m[ERROR]\033[0m %s\n", msg) 
 }
 
-// ==================== 2. Файловый логгер ====================
-// FileLogger записывает логи в файл
 type FileLogger struct {
     file      *os.File
     debugMode bool
@@ -80,8 +76,6 @@ func (l *FileLogger) Close() error {
     return l.file.Close()
 }
 
-// ==================== 3. Структурированный логгер (JSON) ====================
-// JSONLogger выводит логи в JSON формате
 type JSONLogger struct {
     debugMode bool
 }
@@ -127,14 +121,11 @@ func (l *JSONLogger) Error(msg string) {
     fmt.Printf("%s\n", toJSON(entry))
 }
 
-// Вспомогательная функция для JSON
 func toJSON(v interface{}) string {
     bytes, _ := json.Marshal(v)
     return string(bytes)
 }
 
-// ==================== 4. Многоцелевой логгер ====================
-// MultiLogger пишет в несколько логгеров одновременно
 type MultiLogger struct {
     loggers []Logger
 }

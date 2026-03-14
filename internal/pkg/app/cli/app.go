@@ -14,7 +14,7 @@ type Config struct {
 }
 
 type cliApp struct {
-    logger Logger  // Это использует интерфейс из logger.go
+    logger Logger  
     config Config
 }
 
