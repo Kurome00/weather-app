@@ -15,15 +15,15 @@ func TestConsoleLogger(t *testing.T) {
     os.Stdout = w
 
     logger := NewConsoleLogger(true)
-    
+
     // Тестируем Info
     logger.Info("test info message")
     w.Close()
-    
+
     var buf bytes.Buffer
     io.Copy(&buf, r)
     os.Stdout = oldStdout
-    
+
     output := buf.String()
     if !strings.Contains(output, "test info message") {
         t.Errorf("Info output doesn't contain expected message: %s", output)
@@ -39,11 +39,11 @@ func TestConsoleLoggerDebugMode(t *testing.T) {
     logger := NewConsoleLogger(true)
     logger.Debug("debug message")
     w.Close()
-    
+
     var buf bytes.Buffer
     io.Copy(&buf, r)
     os.Stdout = oldStdout
-    
+
     if !strings.Contains(buf.String(), "debug message") {
         t.Error("Debug message should be printed when debugMode=true")
     }
@@ -51,15 +51,15 @@ func TestConsoleLoggerDebugMode(t *testing.T) {
     // С debugMode = false
     r, w, _ = os.Pipe()
     os.Stdout = w
-    
+
     logger = NewConsoleLogger(false)
     logger.Debug("debug message")
     w.Close()
-    
+
     buf.Reset()
     io.Copy(&buf, r)
     os.Stdout = oldStdout
-    
+
     if buf.String() != "" {
         t.Error("Debug message should not be printed when debugMode=false")
     }
@@ -110,7 +110,7 @@ func TestJSONLogger(t *testing.T) {
     logger := NewJSONLogger(true)
     logger.Info("test json message")
     w.Close()
-    
+
     var buf bytes.Buffer
     io.Copy(&buf, r)
     os.Stdout = oldStdout
@@ -127,18 +127,18 @@ func TestJSONLogger(t *testing.T) {
 func TestMultiLogger(t *testing.T) {
     // Создаем буферы для перехвата вывода
     var buf1, buf2 bytes.Buffer
-    
+
     // Создаем простые тестовые логгеры
     logger1 := &testLogger{&buf1}
     logger2 := &testLogger{&buf2}
-    
+
     multi := NewMultiLogger(logger1, logger2)
-    
+
     // Тестируем все методы
     multi.Info("test info")
     multi.Debug("test debug")
     multi.Error("test error")
-    
+
     // Проверяем, что сообщения попали в оба логгера
     if !strings.Contains(buf1.String(), "test info") {
         t.Error("First logger didn't receive info message")

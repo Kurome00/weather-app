@@ -14,7 +14,6 @@ type Logger interface {
     Error(msg string)
 }
 
-
 type ConsoleLogger struct {
     debugMode bool
 }
@@ -26,17 +25,17 @@ func NewConsoleLogger(debugMode bool) *ConsoleLogger {
 }
 
 func (l *ConsoleLogger) Info(msg string) {
-    fmt.Printf("\033[32m[INFO]\033[0m %s\n", msg) 
+    fmt.Printf("\033[32m[INFO]\033[0m %s\n", msg)
 }
 
 func (l *ConsoleLogger) Debug(msg string) {
     if l.debugMode {
-        fmt.Printf("\033[36m[DEBUG]\033[0m %s\n", msg) 
+        fmt.Printf("\033[36m[DEBUG]\033[0m %s\n", msg)
     }
 }
 
 func (l *ConsoleLogger) Error(msg string) {
-    fmt.Printf("\033[31m[ERROR]\033[0m %s\n", msg) 
+    fmt.Printf("\033[31m[ERROR]\033[0m %s\n", msg)
 }
 
 type FileLogger struct {
@@ -50,7 +49,7 @@ func NewFileLogger(filename string, debugMode bool) (*FileLogger, error) {
     if err != nil {
         return nil, err
     }
-    
+
     return &FileLogger{
         file:      file,
         debugMode: debugMode,

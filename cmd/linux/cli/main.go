@@ -5,6 +5,7 @@ import (
     "fmt"
     "os"
 
+    "github.com/Kurome00/weather-app.git/internal/adapters/weather"
     "github.com/Kurome00/weather-app.git/internal/pkg/app/cli"
 )
 
@@ -61,8 +62,10 @@ func main() {
         os.Exit(1)
     }
 
-    app := cli.New(logger, config)
-    
+    // Создаем weatherInfo и передаем в cliApp
+    wi := weather.New(logger)
+    app := cli.New(logger, wi, config)
+
     if err := app.Run(); err != nil {
         logger.Error(fmt.Sprintf("Ошибка приложения: %s", err.Error()))
         os.Exit(1)
