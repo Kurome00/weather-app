@@ -9,14 +9,12 @@ import (
 )
 
 func TestConsoleLogger(t *testing.T) {
-    // Сохраняем оригинальный stdout
     oldStdout := os.Stdout
     r, w, _ := os.Pipe()
     os.Stdout = w
 
     logger := NewConsoleLogger(true)
 
-    // Тестируем Info
     logger.Info("test info message")
     w.Close()
 
@@ -35,7 +33,6 @@ func TestConsoleLoggerDebugMode(t *testing.T) {
     r, w, _ := os.Pipe()
     os.Stdout = w
 
-    // С debugMode = true
     logger := NewConsoleLogger(true)
     logger.Debug("debug message")
     w.Close()
@@ -47,8 +44,6 @@ func TestConsoleLoggerDebugMode(t *testing.T) {
     if !strings.Contains(buf.String(), "debug message") {
         t.Error("Debug message should be printed when debugMode=true")
     }
-
-    // С debugMode = false
     r, w, _ = os.Pipe()
     os.Stdout = w
 
@@ -66,7 +61,6 @@ func TestConsoleLoggerDebugMode(t *testing.T) {
 }
 
 func TestFileLogger(t *testing.T) {
-    // Создаем временный файл
     tmpfile, err := os.CreateTemp("", "test*.log")
     if err != nil {
         t.Fatal(err)
@@ -79,12 +73,10 @@ func TestFileLogger(t *testing.T) {
     }
     defer logger.Close()
 
-    // Пишем логи
     logger.Info("test info")
     logger.Debug("test debug")
     logger.Error("test error")
 
-    // Читаем файл
     content, err := os.ReadFile(tmpfile.Name())
     if err != nil {
         t.Fatal(err)
@@ -125,21 +117,18 @@ func TestJSONLogger(t *testing.T) {
 }
 
 func TestMultiLogger(t *testing.T) {
-    // Создаем буферы для перехвата вывода
+
     var buf1, buf2 bytes.Buffer
 
-    // Создаем простые тестовые логгеры
     logger1 := &testLogger{&buf1}
     logger2 := &testLogger{&buf2}
 
     multi := NewMultiLogger(logger1, logger2)
 
-    // Тестируем все методы
     multi.Info("test info")
     multi.Debug("test debug")
     multi.Error("test error")
 
-    // Проверяем, что сообщения попали в оба логгера
     if !strings.Contains(buf1.String(), "test info") {
         t.Error("First logger didn't receive info message")
     }
@@ -154,7 +143,6 @@ func TestMultiLogger(t *testing.T) {
     }
 }
 
-// Вспомогательный логгер для тестов
 type testLogger struct {
     buf *bytes.Buffer
 }

@@ -42,9 +42,9 @@ func getProvider(cfg config.Config, logger cli.Logger) cli.WeatherInfo {
 
     switch cfg.P.Type {
     case "open-meteo":
-        wi = weather.New(logger)
+        wi = weather.New(logger, cfg)
     default:
-        wi = weather.New(logger)
+        wi = weather.New(logger, cfg)
     }
 
     return wi

@@ -1,6 +1,8 @@
-service:
-  provider:
-    type: open-meteo
-  location:
-    lat: 53.6688
-    long: 23.8223
+provider:
+  type: open-meteo
+location:
+  lat: 53.6688
+  long: 23.8223
+cache:
+  enabled: true
+  ttl: 5m

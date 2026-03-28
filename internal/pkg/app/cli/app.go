@@ -14,6 +14,7 @@ type cliApp struct {
 
 type WeatherInfo interface {
     GetTemperature(float64, float64) (float32, error)
+    ClearCache()
 }
 
 func New(logger Logger, wi WeatherInfo, cfg config.Config) *cliApp {

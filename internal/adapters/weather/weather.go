@@ -5,6 +5,10 @@ import (
     "fmt"
     "io"
     "net/http"
+    "sync"
+    "time"
+
+    "github.com/Kurome00/weather-app.git/internal/pkg/config"
 )
 
 const apiURL = "https://api.open-meteo.com/v1/forecast"
@@ -23,16 +27,84 @@ type response struct {
     Curr current `json:"current"`
 }
 
-type WeatherInfo struct {
-    logger   Logger
-    current  current
-    isLoaded bool
+type cacheEntry struct {
+    temperature float32
+    timestamp   time.Time
 }
 
-func New(logger Logger) *WeatherInfo {
-    return &WeatherInfo{
-        logger: logger,
+type WeatherInfo struct {
+    logger       Logger
+    current      current
+    isLoaded     bool
+    cache        map[string]cacheEntry
+    mu           sync.RWMutex
+    cacheTTL     time.Duration
+    cacheEnabled bool
+}
+
+func New(logger Logger, cfg config.Config) *WeatherInfo {
+    wi := &WeatherInfo{
+        logger:       logger,
+        cache:        make(map[string]cacheEntry),
+        cacheTTL:     5 * time.Minute,
+        cacheEnabled: true,
     }
+
+    if cfg.C.Enabled {
+        wi.cacheEnabled = true
+        if cfg.C.TTL > 0 {
+            wi.cacheTTL = cfg.C.TTL
+        }
+        wi.logger.Debug(fmt.Sprintf("Кэширование включено, TTL: %v", wi.cacheTTL))
+    } else {
+        wi.cacheEnabled = false
+        wi.logger.Debug("Кэширование отключено")
+    }
+
+    return wi
+}
+
+func (wi *WeatherInfo) getCacheKey(lat, long float64) string {
+    return fmt.Sprintf("%f,%f", lat, long)
+}
+
+func (wi *WeatherInfo) getFromCache(lat, long float64) (float32, bool) {
+    if !wi.cacheEnabled {
+        return 0, false
+    }
+
+    wi.mu.RLock()
+    defer wi.mu.RUnlock()
+
+    key := wi.getCacheKey(lat, long)
+    entry, exists := wi.cache[key]
+    if !exists {
+        return 0, false
+    }
+
+    if time.Since(entry.timestamp) > wi.cacheTTL {
+        wi.logger.Debug(fmt.Sprintf("Кэш устарел для координат %s", key))
+        return 0, false
+    }
+
+    wi.logger.Debug(fmt.Sprintf("Данные получены из кэша для %s", key))
+    return entry.temperature, true
+}
+
+func (wi *WeatherInfo) saveToCache(lat, long float64, temp float32) {
+    if !wi.cacheEnabled {
+        return
+    }
+
+    wi.mu.Lock()
+    defer wi.mu.Unlock()
+
+    key := wi.getCacheKey(lat, long)
+    wi.cache[key] = cacheEntry{
+        temperature: temp,
+        timestamp:   time.Now(),
+    }
+    wi.logger.Debug(fmt.Sprintf("Данные сохранены в кэш для %s", key))
 }
 
 func (wi *WeatherInfo) getWeatherInfo(lat, long float64) error {
@@ -76,10 +148,22 @@ func (wi *WeatherInfo) getWeatherInfo(lat, long float64) error {
 }
 
 func (wi *WeatherInfo) GetTemperature(lat, long float64) (float32, error) {
-    if !wi.isLoaded {
-        if err := wi.getWeatherInfo(lat, long); err != nil {
-            return 0, err
-        }
+    cachedTemp, found := wi.getFromCache(lat, long)
+    if found {
+        return cachedTemp, nil
     }
+
+    if err := wi.getWeatherInfo(lat, long); err != nil {
+        return 0, err
+    }
+
+    wi.saveToCache(lat, long, wi.current.Temp)
     return wi.current.Temp, nil
+}
+
+func (wi *WeatherInfo) ClearCache() {
+    wi.mu.Lock()
+    defer wi.mu.Unlock()
+    wi.cache = make(map[string]cacheEntry)
+    wi.logger.Info("Кэш очищен")
 }

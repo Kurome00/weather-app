@@ -2,11 +2,12 @@ package config
 
 import (
     "io"
+    "time"
     "gopkg.in/yaml.v3"
 )
 
 type ConfigFile struct {
-    C Config `yaml:"service"`
+    Service ServiceConfig `yaml:"service"`
 }
 
 type Provider struct {
@@ -18,15 +19,32 @@ type Location struct {
     Long float64 `yaml:"long"`
 }
 
+type Cache struct {
+    Enabled bool          `yaml:"enabled"`
+    TTL     time.Duration `yaml:"ttl"`
+}
+
+type ServiceConfig struct {
+    P Provider `yaml:"provider"`
+    L Location `yaml:"location"`
+    C Cache    `yaml:"cache"`
+}
+
 type Config struct {
     P Provider `yaml:"provider"`
     L Location `yaml:"location"`
+    C Cache    `yaml:"cache"`
 }
 
 func Parse(r io.Reader) (Config, error) {
-    var c ConfigFile
-    if err := yaml.NewDecoder(r).Decode(&c); err != nil {
+    var cf ConfigFile
+    if err := yaml.NewDecoder(r).Decode(&cf); err != nil {
         return Config{}, err
     }
-    return c.C, nil
+    
+    return Config{
+        P: cf.Service.P,
+        L: cf.Service.L,
+        C: cf.Service.C,
+    }, nil
 }

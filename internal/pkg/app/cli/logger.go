@@ -25,17 +25,17 @@ func NewConsoleLogger(debugMode bool) *ConsoleLogger {
 }
 
 func (l *ConsoleLogger) Info(msg string) {
-    fmt.Printf("\033[32m[INFO]\033[0m %s\n", msg)
+    fmt.Printf("[INFO] %s\n", msg)
 }
 
 func (l *ConsoleLogger) Debug(msg string) {
     if l.debugMode {
-        fmt.Printf("\033[36m[DEBUG]\033[0m %s\n", msg)
+        fmt.Printf("[DEBUG] %s\n", msg)
     }
 }
 
 func (l *ConsoleLogger) Error(msg string) {
-    fmt.Printf("\033[31m[ERROR]\033[0m %s\n", msg)
+    fmt.Printf("[ERROR] %s\n", msg)
 }
 
 type FileLogger struct {
