@@ -2,38 +2,34 @@ package cli
 
 import (
     "fmt"
-)
 
-type Config struct {
-    Latitude  float64
-    Longitude float64
-    DebugMode bool
-}
+    "github.com/Kurome00/weather-app.git/internal/pkg/config"
+)
 
 type cliApp struct {
     logger Logger
     wi     WeatherInfo
-    config Config
+    config config.Config
 }
 
 type WeatherInfo interface {
     GetTemperature(float64, float64) (float32, error)
 }
 
-func New(logger Logger, wi WeatherInfo, config Config) *cliApp {
+func New(logger Logger, wi WeatherInfo, cfg config.Config) *cliApp {
     return &cliApp{
         logger: logger,
         wi:     wi,
-        config: config,
+        config: cfg,
     }
 }
 
 func (c *cliApp) Run() error {
     c.logger.Info("Запуск приложения для получения погоды")
     c.logger.Debug(fmt.Sprintf("Конфигурация: широта=%.4f, долгота=%.4f",
-        c.config.Latitude, c.config.Longitude))
+        c.config.L.Lat, c.config.L.Long))
 
-    temp, err := c.wi.GetTemperature(c.config.Latitude, c.config.Longitude)
+    temp, err := c.wi.GetTemperature(c.config.L.Lat, c.config.L.Long)
     if err != nil {
         c.logger.Error(fmt.Sprintf("Ошибка получения температуры: %v", err))
         return err
