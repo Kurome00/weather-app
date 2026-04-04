@@ -2,7 +2,6 @@ package main
 
 import (
     "testing"
-    "time"
 
     pogodaby "github.com/Kurome00/weather-app.git/internal/adapters/pogoda_by"
     "github.com/Kurome00/weather-app.git/internal/adapters/weather"
@@ -18,11 +17,7 @@ func (testLogger) Error(string) {}
 
 func TestGetProviderOpenMeteo(t *testing.T) {
     cfg := config.Config{
-        Provider: config.Provider{Type: "open-meteo"},
-        Cache: config.Cache{
-            Enabled: true,
-            TTL:     time.Minute,
-        },
+        P: config.Provider{Type: "open-meteo"},
     }
 
     provider := getProvider(cfg, testLogger{})
@@ -34,7 +29,7 @@ func TestGetProviderOpenMeteo(t *testing.T) {
 
 func TestGetProviderPogoda(t *testing.T) {
     cfg := config.Config{
-        Provider: config.Provider{Type: "pogoda"},
+        P: config.Provider{Type: "pogoda"},
     }
 
     provider := getProvider(cfg, testLogger{})
@@ -46,11 +41,7 @@ func TestGetProviderPogoda(t *testing.T) {
 
 func TestGetProviderFallback(t *testing.T) {
     cfg := config.Config{
-        Provider: config.Provider{Type: "unknown"},
-        Cache: config.Cache{
-            Enabled: true,
-            TTL:     time.Minute,
-        },
+        P: config.Provider{Type: "unknown"},
     }
 
     provider := getProvider(cfg, testLogger{})

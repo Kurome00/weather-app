@@ -4,6 +4,7 @@ import (
     "fmt"
     "os"
 
+    pogodaby "github.com/Kurome00/weather-app.git/internal/adapters/pogoda_by"
     "github.com/Kurome00/weather-app.git/internal/adapters/weather"
     "github.com/Kurome00/weather-app.git/internal/pkg/app/cli"
     "github.com/Kurome00/weather-app.git/internal/pkg/config"
@@ -43,6 +44,8 @@ func getProvider(cfg config.Config, logger cli.Logger) cli.WeatherInfo {
     switch cfg.P.Type {
     case "open-meteo":
         wi = weather.New(logger)
+    case "pogoda":
+        wi = pogodaby.New(logger)
     default:
         wi = weather.New(logger)
     }
