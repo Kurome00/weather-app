@@ -7,8 +7,6 @@ import (
     "net/http"
     "sync"
     "time"
-
-    "github.com/Kurome00/weather-app.git/internal/pkg/config"
 )
 
 const apiURL = "https://api.open-meteo.com/v1/forecast"
@@ -35,29 +33,28 @@ type cacheEntry struct {
 type WeatherInfo struct {
     logger       Logger
     current      current
-    isLoaded     bool
     cache        map[string]cacheEntry
     mu           sync.RWMutex
     cacheTTL     time.Duration
     cacheEnabled bool
 }
 
-func New(logger Logger, cfg config.Config) *WeatherInfo {
+type CacheConfig struct {
+    Enabled bool
+    TTL     time.Duration
+}
+
+func New(logger Logger, cacheEnabled bool, cacheTTL time.Duration) *WeatherInfo {
     wi := &WeatherInfo{
         logger:       logger,
         cache:        make(map[string]cacheEntry),
-        cacheTTL:     5 * time.Minute,
-        cacheEnabled: true,
+        cacheTTL:     cacheTTL,
+        cacheEnabled: cacheEnabled,
     }
 
-    if cfg.C.Enabled {
-        wi.cacheEnabled = true
-        if cfg.C.TTL > 0 {
-            wi.cacheTTL = cfg.C.TTL
-        }
+    if wi.cacheEnabled {
         wi.logger.Debug(fmt.Sprintf("Кэширование включено, TTL: %v", wi.cacheTTL))
     } else {
-        wi.cacheEnabled = false
         wi.logger.Debug("Кэширование отключено")
     }
 
@@ -143,7 +140,6 @@ func (wi *WeatherInfo) getWeatherInfo(lat, long float64) error {
     }
 
     wi.current = respData.Curr
-    wi.isLoaded = true
     return nil
 }
 

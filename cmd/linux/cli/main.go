@@ -28,24 +28,11 @@ func main() {
 
     logger := cli.NewConsoleLogger(true)
 
-    wi := getProvider(cfg, logger)
+    wi := weather.New(logger, cfg.Cache.Enabled, cfg.Cache.TTL)
 
-    app := cli.New(logger, wi, cfg)
+    app := cli.New(logger, wi, cfg.Location.Lat, cfg.Location.Long)
     if err := app.Run(); err != nil {
         logger.Error(fmt.Sprintf("Ошибка приложения: %v", err))
         os.Exit(1)
     }
-}
-
-func getProvider(cfg config.Config, logger cli.Logger) cli.WeatherInfo {
-    var wi cli.WeatherInfo
-
-    switch cfg.P.Type {
-    case "open-meteo":
-        wi = weather.New(logger, cfg)
-    default:
-        wi = weather.New(logger, cfg)
-    }
-
-    return wi
 }

@@ -1,0 +1,33 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
+
+    - name: Build binaries
+      run: |
+        mkdir -p bin
+        GOOS=linux GOARCH=amd64 go build -o bin/weather-app-linux-amd64 ./cmd/linux/cli
+        GOOS=windows GOARCH=amd64 go build -o bin/weather-app-windows-amd64.exe ./cmd/linux/cli
+        GOOS=darwin GOARCH=amd64 go build -o bin/weather-app-darwin-amd64 ./cmd/linux/cli
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: bin/*
+        generate_release_notes: true

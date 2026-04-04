@@ -2,14 +2,13 @@ package cli
 
 import (
     "fmt"
-
-    "github.com/Kurome00/weather-app.git/internal/pkg/config"
 )
 
 type cliApp struct {
     logger Logger
     wi     WeatherInfo
-    config config.Config
+    lat    float64
+    long   float64
 }
 
 type WeatherInfo interface {
@@ -17,20 +16,21 @@ type WeatherInfo interface {
     ClearCache()
 }
 
-func New(logger Logger, wi WeatherInfo, cfg config.Config) *cliApp {
+func New(logger Logger, wi WeatherInfo, lat, long float64) *cliApp {
     return &cliApp{
         logger: logger,
         wi:     wi,
-        config: cfg,
+        lat:    lat,
+        long:   long,
     }
 }
 
 func (c *cliApp) Run() error {
     c.logger.Info("Запуск приложения для получения погоды")
     c.logger.Debug(fmt.Sprintf("Конфигурация: широта=%.4f, долгота=%.4f",
-        c.config.L.Lat, c.config.L.Long))
+        c.lat, c.long))
 
-    temp, err := c.wi.GetTemperature(c.config.L.Lat, c.config.L.Long)
+    temp, err := c.wi.GetTemperature(c.lat, c.long)
     if err != nil {
         c.logger.Error(fmt.Sprintf("Ошибка получения температуры: %v", err))
         return err
