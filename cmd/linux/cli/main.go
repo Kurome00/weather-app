@@ -1,54 +1,38 @@
 package main
 
 import (
-    "fmt"
-    "os"
+	"fmt"
+	"os"
 
-    pogodaby "github.com/Kurome00/weather-app.git/internal/adapters/pogoda_by"
-    "github.com/Kurome00/weather-app.git/internal/adapters/weather"
-    "github.com/Kurome00/weather-app.git/internal/pkg/app/cli"
-    "github.com/Kurome00/weather-app.git/internal/pkg/config"
-    "github.com/Kurome00/weather-app.git/internal/pkg/flags"
+	"github.com/Kurome00/weather-app.git/internal/pkg/app/cli"
+	"github.com/Kurome00/weather-app.git/internal/pkg/config"
+	"github.com/Kurome00/weather-app.git/internal/pkg/flags"
+	"github.com/Kurome00/weather-app.git/internal/pkg/providers"
 )
 
 func main() {
-    arguments := flags.Parse()
+	arguments := flags.Parse()
 
-    r, err := os.Open(arguments.Path)
-    if err != nil {
-        fmt.Printf("Ошибка открытия файла конфигурации: %v\n", err)
-        os.Exit(1)
-    }
-    defer r.Close()
+	r, err := os.Open(arguments.Path)
+	if err != nil {
+		fmt.Printf("Ошибка открытия файла конфигурации: %v\n", err)
+		os.Exit(1)
+	}
+	defer r.Close()
 
-    cfg, err := config.Parse(r)
-    if err != nil {
-        fmt.Printf("Ошибка парсинга конфигурации: %v\n", err)
-        os.Exit(1)
-    }
+	cfg, err := config.Parse(r)
+	if err != nil {
+		fmt.Printf("Ошибка парсинга конфигурации: %v\n", err)
+		os.Exit(1)
+	}
 
-    logger := cli.NewConsoleLogger(true)
+	logger := cli.NewConsoleLogger(true)
 
-    wi := getProvider(cfg, logger)
+	wi := providers.GetProvider(cfg, logger)
 
-    app := cli.New(logger, wi, cfg)
-    if err := app.Run(); err != nil {
-        logger.Error(fmt.Sprintf("Ошибка приложения: %v", err))
-        os.Exit(1)
-    }
-}
-
-func getProvider(cfg config.Config, logger cli.Logger) cli.WeatherInfo {
-    var wi cli.WeatherInfo
-
-    switch cfg.P.Type {
-    case "open-meteo":
-        wi = weather.New(logger)
-    case "pogoda":
-        wi = pogodaby.New(logger)
-    default:
-        wi = weather.New(logger)
-    }
-
-    return wi
+	app := cli.New(logger, wi, cfg)
+	if err := app.Run(); err != nil {
+		logger.Error(fmt.Sprintf("Ошибка приложения: %v", err))
+		os.Exit(1)
+	}
 }
